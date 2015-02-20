@@ -14,14 +14,14 @@ Motor::Motor(unsigned char enable, unsigned char dir){
   dirPin = dir;
   pinMode(enablePin, OUTPUT);
   pinMode(dirPin, OUTPUT);
-  state = STOPPEDD;
+  state = STOPPED;
 }
 
 void Motor::moveForward(int dutyCycle) {
   if (state == STOPPED) {
     digitalWrite(enablePin, HIGH);
+    state = MOVING;
   }
-  state = MOVING;
   
   analogWrite(dirPin, map(dutyCycle, 0, 100, 128, 255));
 }
@@ -29,16 +29,17 @@ void Motor::moveForward(int dutyCycle) {
 void Motor::moveBackward(int dutyCycle) {
   if (state == STOPPED) {
     digitalWrite(enablePin, HIGH);
+    state = MOVING;
   }
-  state = MOVING;
+  
   analogWrite(dirPin, map(dutyCycle, 0, 100, 127, 0));
 }
 
 void Motor::stop() {
   if (state == MOVING) {
     digitalWrite(enablePin, LOW);
+    state = STOPPED;
   }
-  state = STOPPED;
 }
 
 motorState Motor::getState() {

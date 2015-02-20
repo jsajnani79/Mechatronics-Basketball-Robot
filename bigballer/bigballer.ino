@@ -1,9 +1,9 @@
-#include "Motor.h"
+#include "Bot.h"
 
 /**
  * MAIN INO FOR ROBOT.
  */
-
+ 
 /*---------------- Includes ---------------------------------*/
 
 
@@ -11,8 +11,12 @@
 
 /*---------------- Module Defines ---------------------------*/
 
-//Motor motorA(ENABLE_PIN_A, DIR_PIN_A);
-Motor* motorA;
+#define ENABLE_PIN_LEFT 4
+#define DIR_PIN_LEFT 5
+#define ENABLE_PIN_RIGHT 2
+#define DIR_PIN_RIGHT 3
+
+Bot* robot;
 
 /*---------------- Module Function Prototypes ---------------*/
 
@@ -20,29 +24,29 @@ Motor* motorA;
 /*---------------- Arduino Main Functions -------------------*/
 void setup() {
   Serial.begin(9600);
-  motorA = new Motor(ENABLE_PIN_A, DIR_PIN_A);
+  robot = new Bot(ENABLE_PIN_LEFT, DIR_PIN_LEFT, ENABLE_PIN_RIGHT, DIR_PIN_RIGHT);
 }
 
 void loop() {
   Serial.println("100 forward");
-  motorA->moveForward(100);
+  robot->moveForward(100);
   delay(2000);
 
   Serial.println("stopped");
-  motorA->stop();
+  robot->stop();
   delay(2000);
-
-  Serial.println("100 backward");
-  motorA->moveBackward(100);
-  delay(2000);
-  
-  Serial.println("0 forward")
-  motorA->moveForward(0);
-  delay(2000);
-  
-  Serial.println("0 backward")
-  motorA->moveBackward(0);
-  delay(2000);
+//
+//  Serial.println("100 backward");
+//  motorA->moveBackward(100);
+//  delay(2000);
+//  
+//  Serial.println("0 forward");
+//  motorA->moveForward(0);
+//  delay(2000);
+//  
+//  Serial.println("0 backward");
+//  motorA->moveBackward(0);
+//  delay(2000);
 
 }
 
