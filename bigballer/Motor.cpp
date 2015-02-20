@@ -15,6 +15,7 @@ Motor::Motor(unsigned char enable, unsigned char dir){
   pinMode(enablePin, OUTPUT);
   pinMode(dirPin, OUTPUT);
   state = STOPPED;
+  stop();
 }
 
 void Motor::moveForward(int dutyCycle) {
@@ -44,4 +45,26 @@ void Motor::stop() {
 
 motorState Motor::getState() {
   return state;
+}
+
+void Motor::test() {
+  Serial.println("100 forward");
+  moveForward(100);
+  delay(2000);
+
+  Serial.println("stopped");
+  stop();
+  delay(2000);
+
+  Serial.println("100 backward");
+  moveBackward(100);
+  delay(2000);
+  
+  Serial.println("0 forward");
+  moveForward(0);
+  delay(2000);
+  
+  Serial.println("0 backward");
+  moveBackward(0);
+  delay(2000);
 }

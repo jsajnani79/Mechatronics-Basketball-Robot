@@ -25,16 +25,22 @@ Bot* robot;
 void setup() {
   Serial.begin(9600);
   robot = new Bot(ENABLE_PIN_LEFT, DIR_PIN_LEFT, ENABLE_PIN_RIGHT, DIR_PIN_RIGHT);
+  robot->turnLeft();
 }
 
 void loop() {
-  Serial.println("100 forward");
-  robot->moveForward(100);
-  delay(2000);
-
-  Serial.println("stopped");
-  robot->stop();
-  delay(2000);
+  if (robot->hasFinishedLeftTurn()) {
+    robot->stop();
+    Serial.println("stopping");
+  }
+  
+//  Serial.println("100 forward");
+//  robot->moveForward(100);
+//  delay(2000);
+//
+//  Serial.println("stopped");
+//  robot->stop();
+//  delay(2000);
 //
 //  Serial.println("100 backward");
 //  motorA->moveBackward(100);

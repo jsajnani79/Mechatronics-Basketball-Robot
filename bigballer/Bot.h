@@ -11,12 +11,14 @@ class Bot
     void moveForward(int dutyCycle);
     void moveBackward(int dutyCycle);
     void stop();
+    bool hasFinishedLeftTurn();
     void turnLeft();
     void turnRight();
 
   private:
     Motor* leftMotor;
     Motor* rightMotor;
+    unsigned char turnTimer;
 
 };
 

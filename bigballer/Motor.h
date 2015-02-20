@@ -16,6 +16,7 @@ class Motor
     void moveBackward(int dutyCycle);
     void stop();
     motorState getState();
+    void test();
 
   private:
     unsigned char enablePin;
