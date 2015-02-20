@@ -14,7 +14,7 @@ Motor::Motor(unsigned char enable, unsigned char dir){
   dirPin = dir;
   pinMode(enablePin, OUTPUT);
   pinMode(dirPin, OUTPUT);
-  state = STOPPED;
+  state = STOPPEDD;
 }
 
 void Motor::moveForward(int dutyCycle) {
