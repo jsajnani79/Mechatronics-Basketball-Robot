@@ -25,11 +25,11 @@ Bot* robot;
 void setup() {
   Serial.begin(9600);
   robot = new Bot(ENABLE_PIN_LEFT, DIR_PIN_LEFT, ENABLE_PIN_RIGHT, DIR_PIN_RIGHT);
-  robot->turnLeft();
+  robot->turnRight();
 }
 
 void loop() {
-  if (robot->hasFinishedLeftTurn()) {
+  if (robot->hasFinishedRightTurn()) {
     robot->stop();
     Serial.println("stopping");
   }

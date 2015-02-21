@@ -13,6 +13,7 @@ class Bot
     void stop();
     bool hasFinishedLeftTurn();
     void turnLeft();
+    bool hasFinishedRightTurn();
     void turnRight();
 
   private:

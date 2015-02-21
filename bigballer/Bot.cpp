@@ -8,10 +8,11 @@
 #endif
 #include "Bot.h"
 
-#define TURN_TIMER 10
+#define TURN_LEFT_TIMER 10
+#define TURN_RIGHT_TIMER 11
 #define TIMER_UNSET 255
 #define TURN_DUTY_CYCLE 100
-#define TURN_DURATION 5000 // in ms
+#define TURN_DURATION 150 // in ms
 
 /*---------------- Module Function Prototypes ---------------*/
 
@@ -37,19 +38,29 @@ void Bot::stop() {
 }
 
 bool Bot::hasFinishedLeftTurn() {
-  bool timerExpired = TMRArd_IsTimerExpired(TURN_TIMER) == TMRArd_EXPIRED;
+  bool timerExpired = TMRArd_IsTimerExpired(TURN_LEFT_TIMER) == TMRArd_EXPIRED;
   if (timerExpired) {
-    TMRArd_ClearTimerExpired(TURN_TIMER);
+    TMRArd_ClearTimerExpired(TURN_LEFT_TIMER);
   }
   return timerExpired;
 }
 
 void Bot::turnLeft() {
-  TMRArd_InitTimer(TURN_TIMER, TURN_DURATION);
+  TMRArd_InitTimer(TURN_LEFT_TIMER, TURN_DURATION);
   leftMotor->moveBackward(TURN_DUTY_CYCLE);
   rightMotor->moveForward(TURN_DUTY_CYCLE);
 }
 
-void Bot::turnRight() {
+bool Bot::hasFinishedRightTurn() {
+  bool timerExpired = TMRArd_IsTimerExpired(TURN_RIGHT_TIMER) == TMRArd_EXPIRED;
+  if (timerExpired) {
+    TMRArd_ClearTimerExpired(TURN_RIGHT_TIMER);
+  }
+  return timerExpired;
+}
 
+void Bot::turnRight() {
+  TMRArd_InitTimer(TURN_RIGHT_TIMER, TURN_DURATION);
+  leftMotor->moveForward(TURN_DUTY_CYCLE);
+  rightMotor->moveBackward(TURN_DUTY_CYCLE);
 }
