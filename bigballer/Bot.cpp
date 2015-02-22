@@ -11,8 +11,8 @@
 #define TURN_LEFT_TIMER 10
 #define TURN_RIGHT_TIMER 11
 #define TIMER_UNSET 255
-#define TURN_DUTY_CYCLE 100
-#define TURN_DURATION 150 // in ms
+#define TURN_DUTY_CYCLE 60
+#define TURN_DURATION 200 // in ms
 
 /*---------------- Module Function Prototypes ---------------*/
 
@@ -22,14 +22,14 @@ Bot::Bot(unsigned char enableLeft, unsigned char dirLeft, unsigned char enableRi
   rightMotor = new Motor(enableRight, dirRight);
 }
 
-void Bot::moveForward(int dutyCycle) {
-  leftMotor->moveForward(dutyCycle);
-  rightMotor->moveForward(dutyCycle);
+void Bot::moveForward(int dutyCycleR, int dutyCycleL) {
+  leftMotor->moveForward(dutyCycleL);
+  rightMotor->moveForward(dutyCycleR);
 }
 
-void Bot::moveBackward(int dutyCycle) {
-  leftMotor->moveBackward(dutyCycle);
-  rightMotor->moveBackward(dutyCycle);
+void Bot::moveBackward(int dutyCycleR, int dutyCycleL) {
+  leftMotor->moveBackward(dutyCycleL);
+  rightMotor->moveBackward(dutyCycleR);
 }
 
 void Bot::stop() {
@@ -63,4 +63,19 @@ void Bot::turnRight() {
   TMRArd_InitTimer(TURN_RIGHT_TIMER, TURN_DURATION);
   leftMotor->moveForward(TURN_DUTY_CYCLE);
   rightMotor->moveBackward(TURN_DUTY_CYCLE);
+}
+
+void Bot::makeSquare(){
+  
+  for (int i=0; i < 4; i++){
+    moveForward(60, 70);
+    delay(1000);
+    turnRight();
+    while(!hasFinishedRightTurn()){
+      delay(5);
+    }
+    stop();
+    delay(100);
+  }
+
 }

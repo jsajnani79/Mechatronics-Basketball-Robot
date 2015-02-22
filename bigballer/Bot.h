@@ -8,13 +8,14 @@ class Bot
 {
   public:
     Bot(unsigned char enableLeft, unsigned char dirLeft, unsigned char enableRight, unsigned char dirRight);
-    void moveForward(int dutyCycle);
-    void moveBackward(int dutyCycle);
+    void moveForward(int dutyCycleR, int dutyCycleL);
+    void moveBackward(int dutyCycleR, int dutyCycleL);
     void stop();
     bool hasFinishedLeftTurn();
     void turnLeft();
     bool hasFinishedRightTurn();
     void turnRight();
+    void makeSquare();
 
   private:
     Motor* leftMotor;
