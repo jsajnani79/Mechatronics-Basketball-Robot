@@ -36,28 +36,35 @@ int state;
 
 void setup() {
   Serial.begin(9600);
+  Serial.println("Big Ballers booting up");
   robot = new Bot(ENABLE_PIN_LEFT, DIR_PIN_LEFT, ENABLE_PIN_RIGHT, DIR_PIN_RIGHT);
   state = 1;
-  robot->moveForward(50,50);
+  robot->moveForward(65,65);
 }
 
 void loop() { 
   if(state==1){
     delay(50);
     unsigned int uS = sonar.ping();
-    if((uS / US_ROUNDTRIP_CM) < 40){
+    Serial.print(uS);
+    if((uS / US_ROUNDTRIP_CM) < 22){
       state = 0;
-      robot->moveBackward(50,50);
-      delay(5);
-//      robot->stop();
+      robot->moveBackward(80,80);
+      delay(15);
+      robot->stop();
+      delay(500);
     }
   } else if (state == 0) {
       state = 2;
-      robot->turnRight(); // right now left and right are mixed in the circuitry
+      robot->turnLeft(); // right now left and right are mixed in the circuitry
   } else if (state == 2) {
-      if (robot->hasFinishedRightTurn()) {
+      if (robot->hasFinishedLeftTurn()) {
         state = 1;
-        robot->moveForward(50, 50);
+        robot->moveBackward(80,80);
+        delay(15);
+        robot->stop();
+        delay(500);
+        robot->moveForward(65, 65);
       }
   }
 
