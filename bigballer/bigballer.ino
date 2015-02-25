@@ -11,6 +11,7 @@
 
 
 /*---------------- Module Defines ---------------------------*/
+#define DEBUG
 
 //MOTORS
 #define ENABLE_PIN_LEFT 4
@@ -35,11 +36,13 @@ NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and
 int state;
 
 void setup() {
-  Serial.begin(9600);
-  Serial.println("Big Ballers booting up");
+  #ifdef DEBUG
+    Serial.begin(9600);
+    Serial.println("Big Ballers booting up");
+  #endif
   robot = new Bot(ENABLE_PIN_LEFT, DIR_PIN_LEFT, ENABLE_PIN_RIGHT, DIR_PIN_RIGHT);
   state = 1;
-  robot->moveForward(65,65);
+  robot->moveForward(50,53);
 }
 
 void loop() { 
@@ -47,24 +50,20 @@ void loop() {
     delay(50);
     unsigned int uS = sonar.ping();
     Serial.print(uS);
-    if((uS / US_ROUNDTRIP_CM) < 22){
+    if((uS / US_ROUNDTRIP_CM) < 12){
       state = 0;
-      robot->moveBackward(80,80);
-      delay(15);
-      robot->stop();
+      robot->hardStop();
       delay(500);
     }
   } else if (state == 0) {
       state = 2;
-      robot->turnLeft(); // right now left and right are mixed in the circuitry
+      robot->turnRight();
   } else if (state == 2) {
-      if (robot->hasFinishedLeftTurn()) {
+      if (robot->hasFinishedRightTurn()) {
         state = 1;
-        robot->moveBackward(80,80);
-        delay(15);
-        robot->stop();
+        robot->hardStop();
         delay(500);
-        robot->moveForward(65, 65);
+        robot->moveForward(50, 53);
       }
   }
 

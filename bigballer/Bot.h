@@ -10,7 +10,8 @@ class Bot
     Bot(unsigned char enableLeft, unsigned char dirLeft, unsigned char enableRight, unsigned char dirRight);
     void moveForward(int dutyCycleR, int dutyCycleL);
     void moveBackward(int dutyCycleR, int dutyCycleL);
-    void stop();
+    void coastStop();
+    void hardStop();
     bool hasFinishedLeftTurn();
     void turnLeft();
     bool hasFinishedRightTurn();
