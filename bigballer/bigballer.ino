@@ -19,15 +19,23 @@
 #define ENABLE_PIN_RIGHT 2
 #define DIR_PIN_RIGHT 3
 
-//ULTRASOUND
-#define TRIGGER_PIN  12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
-#define ECHO_PIN     13  // Arduino pin tied to echo pin on the ultrasonic sensor.
-#define MAX_DISTANCE 230 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+//ULTRASOUND FRONT
+#define TRIGGER_PIN_F  12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN_F     13  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define MAX_DISTANCE_F 230 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+
+//ULTRASOUND RIGHT
+#define TRIGGER_PIN_R  10  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN_R     11  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define MAX_DISTANCE_R 230 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+
+#define RIGHT_DISTANCE 45
 
 #define TURN_START 15
 
 Bot* robot;
-NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
+NewPing sonarFront(TRIGGER_PIN_F, ECHO_PIN_F, MAX_DISTANCE_F); // NewPing setup of pins and maximum distance.
+NewPing sonarRight(TRIGGER_PIN_R, ECHO_PIN_R, MAX_DISTANCE_R); // NewPing setup of pins and maximum distance.
 
 /*---------------- Module Function Prototypes ---------------*/
 
@@ -42,30 +50,52 @@ void setup() {
   #endif
   robot = new Bot(ENABLE_PIN_LEFT, DIR_PIN_LEFT, ENABLE_PIN_RIGHT, DIR_PIN_RIGHT);
   state = 1;
-  robot->moveForward(50,53);
+//  robot->moveForward(50,53);
+  robot->moveForward(30,30);
 }
 
 void loop() { 
+//  if(state==1){
+//    delay(50);
+//    unsigned int uS_F = sonarFront.ping();
+//    Serial.print(uS_F);
+//    if((uS_F / US_ROUNDTRIP_CM) < 12){
+//      state = 0;
+//      robot->hardStop();
+//      delay(500);
+//    }
+//  } else if (state == 0) {
+//      state = 2;
+//      robot->turnRight();
+//  } else if (state == 2) {
+//      if (robot->hasFinishedRightTurn()) {
+//        state = 1;
+//        robot->hardStop();
+//        delay(500);
+//        robot->moveForward(50, 53);
+//      }
+//  }
+
+//RIGHT UPLTRASOUND TESTING
   if(state==1){
-    delay(50);
-    unsigned int uS = sonar.ping();
-    Serial.print(uS);
-    if((uS / US_ROUNDTRIP_CM) < 12){
-      state = 0;
+    delay(100);
+    unsigned int uS_F = sonarFront.ping();
+    Serial.println(uS_F);
+    unsigned int uS_R = sonarRight.ping();
+    Serial.print(", Right: ");
+    Serial.print(uS_R);
+    if((uS_F / US_ROUNDTRIP_CM) < 20){
       robot->hardStop();
-      delay(500);
+      state = 0;
+    } else if(((uS_R / US_ROUNDTRIP_CM) > (RIGHT_DISTANCE-2)) && ((uS_R / US_ROUNDTRIP_CM) < (RIGHT_DISTANCE+2))){
+      robot->moveForward(30, 30);
+    } else if(((uS_R / US_ROUNDTRIP_CM) < (RIGHT_DISTANCE-3))){
+      robot->moveForward(30, 33);
+    } else if(((uS_R / US_ROUNDTRIP_CM) > (RIGHT_DISTANCE+3))){
+      robot->moveForward(33, 30); //turn left on more
     }
-  } else if (state == 0) {
-      state = 2;
-      robot->turnRight();
-  } else if (state == 2) {
-      if (robot->hasFinishedRightTurn()) {
-        state = 1;
-        robot->hardStop();
-        delay(500);
-        robot->moveForward(50, 53);
-      }
   }
+
 
 }
 
