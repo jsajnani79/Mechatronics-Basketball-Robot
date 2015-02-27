@@ -29,7 +29,10 @@
 #define ECHO_PIN_R     11  // Arduino pin tied to echo pin on the ultrasonic sensor.
 #define MAX_DISTANCE_R 230 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
-#define RIGHT_DISTANCE 45
+#define RIGHT_DISTANCE 49
+#define MOTOR_LEFT 64
+#define MOTOR_RIGHT 60
+#define DRIFT_MARGIN 2
 
 #define TURN_START 15
 
@@ -51,7 +54,7 @@ void setup() {
   robot = new Bot(ENABLE_PIN_LEFT, DIR_PIN_LEFT, ENABLE_PIN_RIGHT, DIR_PIN_RIGHT);
   state = 1;
 //  robot->moveForward(50,53);
-  robot->moveForward(30,30);
+  robot->moveForward(MOTOR_LEFT,MOTOR_RIGHT);
 }
 
 void loop() { 
@@ -78,21 +81,40 @@ void loop() {
 
 //RIGHT UPLTRASOUND TESTING
   if(state==1){
-    delay(100);
+//    Serial.println("Front: ");
     unsigned int uS_F = sonarFront.ping();
-    Serial.println(uS_F);
+//    Serial.println(uS_F/US_ROUNDTRIP_CM);
     unsigned int uS_R = sonarRight.ping();
-    Serial.print(", Right: ");
-    Serial.print(uS_R);
-    if((uS_F / US_ROUNDTRIP_CM) < 20){
+//    Serial.print(", Right: ");
+//    Serial.println(uS_R/US_ROUNDTRIP_CM);
+    if((uS_F / US_ROUNDTRIP_CM) < 10){
       robot->hardStop();
       state = 0;
-    } else if(((uS_R / US_ROUNDTRIP_CM) > (RIGHT_DISTANCE-2)) && ((uS_R / US_ROUNDTRIP_CM) < (RIGHT_DISTANCE+2))){
-      robot->moveForward(30, 30);
-    } else if(((uS_R / US_ROUNDTRIP_CM) < (RIGHT_DISTANCE-3))){
-      robot->moveForward(30, 33);
-    } else if(((uS_R / US_ROUNDTRIP_CM) > (RIGHT_DISTANCE+3))){
-      robot->moveForward(33, 30); //turn left on more
+    } else if(((uS_R / US_ROUNDTRIP_CM) > (RIGHT_DISTANCE-DRIFT_MARGIN)) && ((uS_R / US_ROUNDTRIP_CM) < (RIGHT_DISTANCE+DRIFT_MARGIN))){
+      Serial.println(0);
+      robot->moveForward(MOTOR_LEFT, MOTOR_RIGHT);
+      delay(50);
+    } else if(((uS_R / US_ROUNDTRIP_CM) < (RIGHT_DISTANCE-DRIFT_MARGIN))){
+      // too close, turn left
+      Serial.println(1);
+      robot->moveForward(0, MOTOR_RIGHT+3);
+      delay(160);
+      robot->moveForward(MOTOR_LEFT, MOTOR_RIGHT);
+      delay(250);
+      robot->moveForward(MOTOR_LEFT+3,0);
+      delay(120);
+      robot->moveForward(MOTOR_LEFT, MOTOR_RIGHT);
+    } else if(((uS_R / US_ROUNDTRIP_CM) > (RIGHT_DISTANCE+4))){
+      // too far, turn right
+      Serial.println(2);
+      robot->moveForward(MOTOR_LEFT+3, 0);
+      delay(160);
+      robot->moveForward(MOTOR_LEFT, MOTOR_RIGHT);
+      delay(250);
+      robot->moveForward(0,MOTOR_RIGHT+3);
+      delay(160);
+      robot->moveForward(MOTOR_LEFT, MOTOR_RIGHT);
+      
     }
   }
 
