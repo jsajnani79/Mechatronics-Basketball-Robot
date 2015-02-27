@@ -1,5 +1,7 @@
 #include "Bot.h"
 #include "NewPing.h"
+#include <Servo.h>
+
 
 /**
  * MAIN INO FOR ROBOT.
@@ -19,6 +21,14 @@
 #define ENABLE_PIN_RIGHT 2
 #define DIR_PIN_RIGHT 3
 
+//SERVOS
+#define gatePin 8
+#define armPin 9
+#define closed 160
+#define opened 90
+#define up 20
+#define down 100
+
 //ULTRASOUND FRONT
 #define TRIGGER_PIN_F  12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN_F     13  // Arduino pin tied to echo pin on the ultrasonic sensor.
@@ -37,6 +47,8 @@
 #define TURN_START 15
 
 Bot* robot;
+Servo gateServo;
+Servo armServo;
 NewPing sonarFront(TRIGGER_PIN_F, ECHO_PIN_F, MAX_DISTANCE_F); // NewPing setup of pins and maximum distance.
 NewPing sonarRight(TRIGGER_PIN_R, ECHO_PIN_R, MAX_DISTANCE_R); // NewPing setup of pins and maximum distance.
 
@@ -52,6 +64,13 @@ void setup() {
     Serial.println("Big Ballers booting up");
   #endif
   robot = new Bot(ENABLE_PIN_LEFT, DIR_PIN_LEFT, ENABLE_PIN_RIGHT, DIR_PIN_RIGHT);
+  gateServo.attach(gatePin);
+  gateServo.write(closed);
+  armServo.attach(armPin);
+  armServo.write(up);
+  
+  // get ballz
+    
   state = 1;
 //  robot->moveForward(50,53);
   robot->moveForward(MOTOR_LEFT,MOTOR_RIGHT);
