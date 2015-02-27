@@ -22,12 +22,12 @@
 #define DIR_PIN_RIGHT 3
 
 //SERVOS
-#define gatePin 8
-#define armPin 9
-#define closed 160
-#define opened 90
-#define up 20
-#define down 100
+#define GATE_PIN 8
+#define ARM_PIN 9
+#define GATE_CLOSE_ANGLE 160
+#define GATE_OPEN_ANGLE 90
+#define ARM_UP_ANGLE 20
+#define ARM_DOWN_ANGLE 100
 
 //ULTRASOUND FRONT
 #define TRIGGER_PIN_F  12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
@@ -40,11 +40,12 @@
 #define MAX_DISTANCE_R 230 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
 #define RIGHT_DISTANCE 49
-#define MOTOR_LEFT 64
-#define MOTOR_RIGHT 60
+#define LEFT_SPEED 64  // needs to be calibrated to make bot move in straight line
+#define RIGHT_SPEED 60  // needs to be calibrated to make bot move in straight line
 #define DRIFT_MARGIN 2
 
 #define TURN_START 15
+#define BASKET_PROXIMITY 10
 
 Bot* robot;
 Servo gateServo;
@@ -56,83 +57,62 @@ NewPing sonarRight(TRIGGER_PIN_R, ECHO_PIN_R, MAX_DISTANCE_R); // NewPing setup 
 
 
 /*---------------- Arduino Main Functions -------------------*/
-int state;
+static int state;
 
 void setup() {
   #ifdef DEBUG
     Serial.begin(9600);
     Serial.println("Big Ballers booting up");
   #endif
+
   robot = new Bot(ENABLE_PIN_LEFT, DIR_PIN_LEFT, ENABLE_PIN_RIGHT, DIR_PIN_RIGHT);
-  gateServo.attach(gatePin);
-  gateServo.write(closed);
-  armServo.attach(armPin);
-  armServo.write(up);
-  
-  // get ballz
-    
+//  gateServo.attach(GATE_PIN);
+//  gateServo.write(GATE_CLOSE_ANGLE);
+//  armServo.attach(ARM_PIN);
+//  armServo.write(ARM_UP_ANGLE);
   state = 1;
-//  robot->moveForward(50,53);
-  robot->moveForward(MOTOR_LEFT,MOTOR_RIGHT);
+  robot->moveForward(LEFT_SPEED,RIGHT_SPEED);
 }
 
 void loop() { 
-//  if(state==1){
-//    delay(50);
-//    unsigned int uS_F = sonarFront.ping();
-//    Serial.print(uS_F);
-//    if((uS_F / US_ROUNDTRIP_CM) < 12){
-//      state = 0;
-//      robot->hardStop();
-//      delay(500);
-//    }
-//  } else if (state == 0) {
-//      state = 2;
-//      robot->turnRight();
-//  } else if (state == 2) {
-//      if (robot->hasFinishedRightTurn()) {
-//        state = 1;
-//        robot->hardStop();
-//        delay(500);
-//        robot->moveForward(50, 53);
-//      }
-//  }
 
-//RIGHT UPLTRASOUND TESTING
   if(state==1){
 //    Serial.println("Front: ");
-    unsigned int uS_F = sonarFront.ping();
-//    Serial.println(uS_F/US_ROUNDTRIP_CM);
-    unsigned int uS_R = sonarRight.ping();
+    unsigned int forwardDistance = sonarFront.ping() / US_ROUNDTRIP_CM;
+//    Serial.println(forwardDistance);
+    unsigned int rightDistance = sonarRight.ping() / US_ROUNDTRIP_CM;
 //    Serial.print(", Right: ");
-//    Serial.println(uS_R/US_ROUNDTRIP_CM);
-    if((uS_F / US_ROUNDTRIP_CM) < 10){
+//    Serial.println(rightDistance);
+    if(forwardDistance < BASKET_PROXIMITY){
       robot->hardStop();
       state = 0;
-    } else if(((uS_R / US_ROUNDTRIP_CM) > (RIGHT_DISTANCE-DRIFT_MARGIN)) && ((uS_R / US_ROUNDTRIP_CM) < (RIGHT_DISTANCE+DRIFT_MARGIN))){
+     
+    } else if(rightDistance > (RIGHT_DISTANCE - DRIFT_MARGIN) && rightDistance < (RIGHT_DISTANCE + DRIFT_MARGIN)){
       Serial.println(0);
-      robot->moveForward(MOTOR_LEFT, MOTOR_RIGHT);
+      robot->moveForward(LEFT_SPEED, RIGHT_SPEED);
       delay(50);
-    } else if(((uS_R / US_ROUNDTRIP_CM) < (RIGHT_DISTANCE-DRIFT_MARGIN))){
+      
+    } else if(rightDistance < (RIGHT_DISTANCE - DRIFT_MARGIN)){
       // too close, turn left
       Serial.println(1);
-      robot->moveForward(0, MOTOR_RIGHT+3);
+      robot->moveForward(0, RIGHT_SPEED+3);
       delay(160);
-      robot->moveForward(MOTOR_LEFT, MOTOR_RIGHT);
+      robot->moveForward(LEFT_SPEED, RIGHT_SPEED);
       delay(250);
-      robot->moveForward(MOTOR_LEFT+3,0);
+      robot->moveForward(LEFT_SPEED+3,0);
       delay(120);
-      robot->moveForward(MOTOR_LEFT, MOTOR_RIGHT);
-    } else if(((uS_R / US_ROUNDTRIP_CM) > (RIGHT_DISTANCE+4))){
+      robot->moveForward(LEFT_SPEED, RIGHT_SPEED);
+      
+    } else if(rightDistance > (RIGHT_DISTANCE+4)){
       // too far, turn right
       Serial.println(2);
-      robot->moveForward(MOTOR_LEFT+3, 0);
+      robot->moveForward(LEFT_SPEED+3, 0);
       delay(160);
-      robot->moveForward(MOTOR_LEFT, MOTOR_RIGHT);
+      robot->moveForward(LEFT_SPEED, RIGHT_SPEED);
       delay(250);
-      robot->moveForward(0,MOTOR_RIGHT+3);
+      robot->moveForward(0,RIGHT_SPEED+3);
       delay(160);
-      robot->moveForward(MOTOR_LEFT, MOTOR_RIGHT);
+      robot->moveForward(LEFT_SPEED, RIGHT_SPEED);
       
     }
   }
