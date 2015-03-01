@@ -1,5 +1,6 @@
 #include "Bot.h"
 #include "NewPing.h"
+#include "Timers.h"s
 #include <Servo.h>
 
 
@@ -24,10 +25,10 @@
 //SERVOS
 #define GATE_PIN 8
 #define ARM_PIN 9
-#define GATE_CLOSE_ANGLE 160
-#define GATE_OPEN_ANGLE 90
-#define ARM_UP_ANGLE 20
-#define ARM_DOWN_ANGLE 100
+#define GATE_CLOSE_ANGLE 0
+#define GATE_OPEN_ANGLE 100
+#define ARM_UP_ANGLE 85
+#define ARM_DOWN_ANGLE 180
 
 //ULTRASOUND FRONT
 #define TRIGGER_PIN_F  12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
@@ -41,18 +42,23 @@
 
 #define RIGHT_DISTANCE 49
 #define LEFT_SPEED 63  // needs to be calibrated to make bot move in straight line
-#define RIGHT_SPEED 60  // needs to be calibrated to make bot move in straight line
+#define RIGHT_SPEED 61  // needs to be calibrated to make bot move in straight line
 #define DRIFT_MARGIN 2
 
-#define COLLECTION_LEFT_SPEED 53
+#define COLLECTION_LEFT_SPEED 52
 #define COLLECTION_RIGHT_SPEED 50
 
 #define TURN_START 15
-#define BASKET_PROXIMITY 10
+#define BASKET_PROXIMITY 6
+#define BUMPER_PROXIMITY 203
 #define NUM_BALLS_TO_COLLECT 3
 
+//Timers
+#define GAME_TIMER  1
+#define GAME_DURATION 120000
+
 typedef enum {
-  BALL_COLLECTION, TO_BASKET, FROM_BASKET
+  BALL_COLLECTION, TO_BASKET, FROM_BASKET, FINISHED, TEST
 } robotState;
 
 Bot* robot;
@@ -75,31 +81,44 @@ void setup() {
   #endif
 
   robot = new Bot(ENABLE_PIN_LEFT, DIR_PIN_LEFT, ENABLE_PIN_RIGHT, DIR_PIN_RIGHT);
+  
+  
   gateServo.attach(GATE_PIN);
   gateServo.write(GATE_CLOSE_ANGLE);
   armServo.attach(ARM_PIN);
   armServo.write(180);
-//  armServo.write(ARM_UP_ANGLE);
+  armServo.write(ARM_UP_ANGLE);
+    
   ballsCollected = 0;
   state = BALL_COLLECTION;
-//  robot->moveForward(LEFT_SPEED,RIGHT_SPEED);
+//  robot->moveForward(100,100);
+//  state = TEST;
+  TMRArd_InitTimer(GAME_TIMER, GAME_DURATION);
 }
 
 void loop() {
-  if (state == BALL_COLLECTION) {
-    robot->moveBackward(COLLECTION_LEFT_SPEED, COLLECTION_RIGHT_SPEED);
-    delay(800);
+  bool timerExpired = TMRArd_IsTimerExpired(GAME_TIMER) == TMRArd_EXPIRED;
+  if (timerExpired) {
+    TMRArd_ClearTimerExpired(GAME_TIMER);
     robot->hardStop();
-    delay(300);
-    robot->moveForward(COLLECTION_LEFT_SPEED, COLLECTION_RIGHT_SPEED);
+    state = FINISHED;
+  }
+  
+  if (state == BALL_COLLECTION) {
+    robot->moveBackward(COLLECTION_LEFT_SPEED, COLLECTION_RIGHT_SPEED+2);
+    delay(1100);
+//    robot->hardStop();
+//    delay(300);
+    robot->moveForward(COLLECTION_LEFT_SPEED, COLLECTION_RIGHT_SPEED + 1);
     delay(600);
     robot->hardStop();
+    delay(2000);
     ballsCollected++;
-    if (ballsCollected == NUM_BALLS_TO_COLLECT) {
+    if (ballsCollected >= NUM_BALLS_TO_COLLECT) {
       state = TO_BASKET;
+      ballsCollected = 0;
       robot->moveForward(LEFT_SPEED,RIGHT_SPEED);
     }
-    delay(1000);
   }
 
   if(state==TO_BASKET){
@@ -115,13 +134,15 @@ void loop() {
       gateServo.write(GATE_OPEN_ANGLE);
       delay(2000);
       gateServo.write(GATE_CLOSE_ANGLE);
+      state = FROM_BASKET;
+      robot->moveBackward(LEFT_SPEED, RIGHT_SPEED);
      
     } else if(rightDistance > (RIGHT_DISTANCE - DRIFT_MARGIN) && rightDistance < (RIGHT_DISTANCE + DRIFT_MARGIN)){
       #ifdef DEBUG
         Serial.print(0);
       #endif
-      // robot->moveForward(LEFT_SPEED, RIGHT_SPEED);
-      // delay(50);
+      
+      // Robot is centered
       
     } else if(rightDistance < (RIGHT_DISTANCE - DRIFT_MARGIN)){
       // too close, turn left
@@ -129,28 +150,77 @@ void loop() {
         Serial.print(1);
       #endif
       robot->moveForward(0, RIGHT_SPEED+3);
-      delay(160);
+      delay(170);
       robot->moveForward(LEFT_SPEED, RIGHT_SPEED);
-      delay(250);
+      delay(280);
       robot->moveForward(LEFT_SPEED+3,0);
-      delay(120);
+      delay(145);
       robot->moveForward(LEFT_SPEED, RIGHT_SPEED);
       
-    } else if(rightDistance > (RIGHT_DISTANCE+4)){
+    } else if(rightDistance > (RIGHT_DISTANCE + DRIFT_MARGIN)){
       // too far, turn right
       #ifdef DEBUG
         Serial.print(2);
       #endif
-      robot->moveForward(LEFT_SPEED+3, 0);
-      delay(160);
-      robot->moveForward(LEFT_SPEED, RIGHT_SPEED);
-      delay(250);
-      robot->moveForward(0,RIGHT_SPEED+3);
-      delay(160);
+      robot->moveForward(LEFT_SPEED+2, 0);
+      delay(190);
+      robot->moveForward(LEFT_SPEED+2, RIGHT_SPEED);
+      delay(310);
+      robot->moveForward(0,RIGHT_SPEED+2);
+      delay(189);
       robot->moveForward(LEFT_SPEED, RIGHT_SPEED);
       
     }
   }
+  
+  
+    if(state==FROM_BASKET){
+//    Serial.println("Front: ");
+    unsigned int forwardDistance = sonarFront.ping() / US_ROUNDTRIP_CM;
+//    Serial.println(forwardDistance);
+    unsigned int rightDistance = sonarRight.ping() / US_ROUNDTRIP_CM;
+//    Serial.print(", Right: ");
+//    Serial.println(rightDistance);
+    if(forwardDistance > BUMPER_PROXIMITY){
+      state = BALL_COLLECTION;
+     
+    } else if(rightDistance > (RIGHT_DISTANCE - DRIFT_MARGIN) && rightDistance < (RIGHT_DISTANCE + DRIFT_MARGIN)){
+      #ifdef DEBUG
+        Serial.print(0);
+      #endif
+      
+      // Robot is centered
+      
+    } else if(rightDistance < (RIGHT_DISTANCE - DRIFT_MARGIN)){
+      // too close, turn left
+      #ifdef DEBUG
+        Serial.print(1);
+      #endif
+      robot->moveBackward(0, RIGHT_SPEED+3);
+      delay(170);
+      robot->moveBackward(LEFT_SPEED, RIGHT_SPEED);
+      delay(250);
+      robot->moveBackward(LEFT_SPEED+3,0);
+      delay(150);
+      robot->moveBackward(LEFT_SPEED, RIGHT_SPEED+2);
+      
+    } else if(rightDistance > (RIGHT_DISTANCE + DRIFT_MARGIN)){
+      // too far, turn right
+      #ifdef DEBUG
+        Serial.print(2);
+      #endif
+      robot->moveBackward(LEFT_SPEED+4, 0);
+      delay(180);
+      robot->moveBackward(LEFT_SPEED, RIGHT_SPEED+2);
+      delay(310);
+      robot->moveBackward(0,RIGHT_SPEED+4);
+      delay(180);
+      robot->moveBackward(LEFT_SPEED, RIGHT_SPEED+2);
+      
+    }
+  }
+  
+  
 
 }
 

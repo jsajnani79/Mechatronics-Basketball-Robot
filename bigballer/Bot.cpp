@@ -14,7 +14,8 @@
 #define TURN_DUTY_CYCLE 90 //60
 #define TURN_DURATION 330 // in ms
 
-#define STOP_DUTY_CYCLE 90
+#define STOP_DUTY_CYCLE_LEFT 90
+#define STOP_DUTY_CYCLE_RIGHT 94
 #define STOP_DURATION 20
 
 /*---------------- Module Function Prototypes ---------------*/
@@ -41,7 +42,7 @@ void Bot::coastStop() {
 }
 
 void Bot::hardStop() {
-  moveBackward(STOP_DUTY_CYCLE, STOP_DUTY_CYCLE);
+  moveBackward(STOP_DUTY_CYCLE_LEFT, STOP_DUTY_CYCLE_RIGHT);
   delay(STOP_DURATION); 
   coastStop();
 }
