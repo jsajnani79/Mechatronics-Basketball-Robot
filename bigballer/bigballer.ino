@@ -105,11 +105,11 @@ void loop() {
   }
   
   if (state == BALL_COLLECTION) {
-    robot->moveBackward(COLLECTION_LEFT_SPEED, COLLECTION_RIGHT_SPEED+2);
+    robot->moveBackward(COLLECTION_LEFT_SPEED, COLLECTION_RIGHT_SPEED+1);
     delay(1100);
 //    robot->hardStop();
 //    delay(300);
-    robot->moveForward(COLLECTION_LEFT_SPEED, COLLECTION_RIGHT_SPEED + 1);
+    robot->moveForward(COLLECTION_LEFT_SPEED + 1, COLLECTION_RIGHT_SPEED );
     delay(600);
     robot->hardStop();
     delay(2000);
@@ -122,21 +122,24 @@ void loop() {
   }
 
   if(state==TO_BASKET){
-//    Serial.println("Front: ");
+    Serial.println("Front: ");
     unsigned int forwardDistance = sonarFront.ping() / US_ROUNDTRIP_CM;
-//    Serial.println(forwardDistance);
+    Serial.print(forwardDistance);
     unsigned int rightDistance = sonarRight.ping() / US_ROUNDTRIP_CM;
-//    Serial.print(", Right: ");
-//    Serial.println(rightDistance);
+    Serial.print(", Right: ");
+    Serial.println(rightDistance);
     if(forwardDistance < BASKET_PROXIMITY){
-      robot->hardStop();
-      state = FROM_BASKET;
-      gateServo.write(GATE_OPEN_ANGLE);
-      delay(2000);
-      gateServo.write(GATE_CLOSE_ANGLE);
-      state = FROM_BASKET;
-      robot->moveBackward(LEFT_SPEED, RIGHT_SPEED);
-     
+      delay(50);
+      forwardDistance = sonarFront.ping() / US_ROUNDTRIP_CM;
+      if(forwardDistance < BASKET_PROXIMITY){
+        robot->hardStop();
+        state = FROM_BASKET;
+        gateServo.write(GATE_OPEN_ANGLE);
+        delay(2000);
+        gateServo.write(GATE_CLOSE_ANGLE);
+        state = FROM_BASKET;
+        robot->moveBackward(LEFT_SPEED, RIGHT_SPEED + 2);
+      }
     } else if(rightDistance > (RIGHT_DISTANCE - DRIFT_MARGIN) && rightDistance < (RIGHT_DISTANCE + DRIFT_MARGIN)){
       #ifdef DEBUG
         Serial.print(0);
@@ -164,10 +167,10 @@ void loop() {
       #endif
       robot->moveForward(LEFT_SPEED+2, 0);
       delay(190);
-      robot->moveForward(LEFT_SPEED+2, RIGHT_SPEED);
+      robot->moveForward(LEFT_SPEED+1, RIGHT_SPEED);
       delay(310);
       robot->moveForward(0,RIGHT_SPEED+2);
-      delay(189);
+      delay(187);
       robot->moveForward(LEFT_SPEED, RIGHT_SPEED);
       
     }
@@ -197,25 +200,25 @@ void loop() {
         Serial.print(1);
       #endif
       robot->moveBackward(0, RIGHT_SPEED+3);
-      delay(170);
-      robot->moveBackward(LEFT_SPEED, RIGHT_SPEED);
-      delay(250);
+      delay(180);
+      robot->moveBackward(LEFT_SPEED, RIGHT_SPEED+2);
+      delay(200);
       robot->moveBackward(LEFT_SPEED+3,0);
       delay(150);
-      robot->moveBackward(LEFT_SPEED, RIGHT_SPEED+2);
+      robot->moveBackward(LEFT_SPEED, RIGHT_SPEED+3);
       
     } else if(rightDistance > (RIGHT_DISTANCE + DRIFT_MARGIN)){
       // too far, turn right
       #ifdef DEBUG
         Serial.print(2);
       #endif
-      robot->moveBackward(LEFT_SPEED+4, 0);
+      robot->moveBackward(LEFT_SPEED+3, 0);
       delay(180);
       robot->moveBackward(LEFT_SPEED, RIGHT_SPEED+2);
-      delay(310);
-      robot->moveBackward(0,RIGHT_SPEED+4);
-      delay(180);
-      robot->moveBackward(LEFT_SPEED, RIGHT_SPEED+2);
+      delay(200);
+      robot->moveBackward(0,RIGHT_SPEED+3);
+      delay(190);
+      robot->moveBackward(LEFT_SPEED, RIGHT_SPEED+4);
       
     }
   }
