@@ -18,8 +18,6 @@
 #define STOP_DUTY_CYCLE_RIGHT 94
 #define STOP_DURATION 20
 
-/*---------------- Module Function Prototypes ---------------*/
-
 /*---------------- Module Functions -------------------------*/
 Bot::Bot(unsigned char enableLeft, unsigned char dirLeft, unsigned char enableRight, unsigned char dirRight) {
   leftMotor = new Motor(enableLeft, dirLeft);

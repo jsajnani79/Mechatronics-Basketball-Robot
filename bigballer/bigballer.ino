@@ -1,17 +1,13 @@
+/**
+ * MAIN INO FOR ROBOT.
+ */
+
+/*---------------- Includes ---------------------------------*/
+
 #include "Bot.h"
 #include "NewPing.h"
 #include "Timers.h"s
 #include <Servo.h>
-
-
-/**
- * MAIN INO FOR ROBOT.
- */
- 
-/*---------------- Includes ---------------------------------*/
-
-
-
 
 /*---------------- Module Defines ---------------------------*/
 #define DEBUG
@@ -66,18 +62,15 @@ Servo gateServo;
 Servo armServo;
 NewPing sonarFront(TRIGGER_PIN_F, ECHO_PIN_F, MAX_DISTANCE_F); // NewPing setup of pins and maximum distance.
 NewPing sonarRight(TRIGGER_PIN_R, ECHO_PIN_R, MAX_DISTANCE_R); // NewPing setup of pins and maximum distance.
-
-/*---------------- Module Function Prototypes ---------------*/
-
-
-/*---------------- Arduino Main Functions -------------------*/
 static robotState state;
 static int ballsCollected;
+
+/*---------------- Arduino Main Functions -------------------*/
 
 void setup() {
   #ifdef DEBUG
     Serial.begin(9600);
-    Serial.println("Big Ballers booting up");
+    Serial.println("Big Ballers booting up...");
   #endif
 
   robot = new Bot(ENABLE_PIN_LEFT, DIR_PIN_LEFT, ENABLE_PIN_RIGHT, DIR_PIN_RIGHT);
@@ -91,24 +84,21 @@ void setup() {
     
   ballsCollected = 0;
   state = BALL_COLLECTION;
-//  robot->moveForward(100,100);
-//  state = TEST;
   TMRArd_InitTimer(GAME_TIMER, GAME_DURATION);
 }
 
 void loop() {
   bool timerExpired = TMRArd_IsTimerExpired(GAME_TIMER) == TMRArd_EXPIRED;
-  if (timerExpired) {
+  if (timerExpired) {  /* Round is over */
     TMRArd_ClearTimerExpired(GAME_TIMER);
     robot->hardStop();
     state = FINISHED;
   }
   
+  /* Hit and release the bumper to collect balls */
   if (state == BALL_COLLECTION) {
     robot->moveBackward(COLLECTION_LEFT_SPEED, COLLECTION_RIGHT_SPEED+1);
     delay(1100);
-//    robot->hardStop();
-//    delay(300);
     robot->moveForward(COLLECTION_LEFT_SPEED + 1, COLLECTION_RIGHT_SPEED );
     delay(600);
     robot->hardStop();
@@ -121,34 +111,34 @@ void loop() {
     }
   }
 
+  /* Go to the 1-point basket */
   if(state==TO_BASKET){
-    Serial.println("Front: ");
     unsigned int forwardDistance = sonarFront.ping() / US_ROUNDTRIP_CM;
-    Serial.print(forwardDistance);
     unsigned int rightDistance = sonarRight.ping() / US_ROUNDTRIP_CM;
-    Serial.print(", Right: ");
-    Serial.println(rightDistance);
+
+    /* If we have reached the basket */
     if(forwardDistance < BASKET_PROXIMITY){
       delay(50);
       forwardDistance = sonarFront.ping() / US_ROUNDTRIP_CM;
       if(forwardDistance < BASKET_PROXIMITY){
         robot->hardStop();
         state = FROM_BASKET;
-        gateServo.write(GATE_OPEN_ANGLE);
+        gateServo.write(GATE_OPEN_ANGLE); /* Open the gate to let balls into the basket */
         delay(2000);
         gateServo.write(GATE_CLOSE_ANGLE);
         state = FROM_BASKET;
         robot->moveBackward(LEFT_SPEED, RIGHT_SPEED + 2);
       }
+
     } else if(rightDistance > (RIGHT_DISTANCE - DRIFT_MARGIN) && rightDistance < (RIGHT_DISTANCE + DRIFT_MARGIN)){
       #ifdef DEBUG
         Serial.print(0);
       #endif
       
-      // Robot is centered
+      /* Robot is centered along black tape */
       
     } else if(rightDistance < (RIGHT_DISTANCE - DRIFT_MARGIN)){
-      // too close, turn left
+      /* too close to the right wall, so turn left and then straighten */
       #ifdef DEBUG
         Serial.print(1);
       #endif
@@ -161,7 +151,7 @@ void loop() {
       robot->moveForward(LEFT_SPEED, RIGHT_SPEED);
       
     } else if(rightDistance > (RIGHT_DISTANCE + DRIFT_MARGIN)){
-      // too far, turn right
+      /* too far from the right wall, so turn right and then straighten */
       #ifdef DEBUG
         Serial.print(2);
       #endif
@@ -176,14 +166,10 @@ void loop() {
     }
   }
   
-  
-    if(state==FROM_BASKET){
-//    Serial.println("Front: ");
+  /* Return to the bumper from the basket to collect more balls */
+  if(state==FROM_BASKET){
     unsigned int forwardDistance = sonarFront.ping() / US_ROUNDTRIP_CM;
-//    Serial.println(forwardDistance);
     unsigned int rightDistance = sonarRight.ping() / US_ROUNDTRIP_CM;
-//    Serial.print(", Right: ");
-//    Serial.println(rightDistance);
     if(forwardDistance > BUMPER_PROXIMITY){
       state = BALL_COLLECTION;
      
@@ -192,10 +178,10 @@ void loop() {
         Serial.print(0);
       #endif
       
-      // Robot is centered
+      /* Robot is centered along black tape */
       
     } else if(rightDistance < (RIGHT_DISTANCE - DRIFT_MARGIN)){
-      // too close, turn left
+      /* too close to the right wall, so turn left and then straighten */
       #ifdef DEBUG
         Serial.print(1);
       #endif
@@ -208,7 +194,7 @@ void loop() {
       robot->moveBackward(LEFT_SPEED, RIGHT_SPEED+3);
       
     } else if(rightDistance > (RIGHT_DISTANCE + DRIFT_MARGIN)){
-      // too far, turn right
+      /* too far from the right wall, so turn right and then straighten */
       #ifdef DEBUG
         Serial.print(2);
       #endif
@@ -226,8 +212,3 @@ void loop() {
   
 
 }
-
-/*---------------- Module Functions -------------------------*/
-
-
-
